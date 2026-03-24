@@ -10,7 +10,7 @@ from views.cierre_dia_view import CierreDiaView
 
 def main(page: ft.Page):
     try:
-        # 1. Configuración de la ventana principal
+        # 1. Configuracion de la ventana principal
         page.title = "SaaS POS System"
         page.theme_mode = ft.ThemeMode.DARK
         page.bgcolor = "#0f172a"
@@ -19,10 +19,10 @@ def main(page: ft.Page):
         # 2. Inicializar la capa de datos
         dm = DataManager()
 
-        # 3. Contenedor dinámico (aquí se inyectan las pantallas)
+        # 3. Contenedor dinamico (aqui se inyectan las pantallas)
         content_area = ft.Container(expand=True, bgcolor="#0f172a")
 
-        # 4. Lógica de navegación
+        # 4. Logica de navegacion
         def change_route(e):
             idx = e.control.selected_index
             content_area.content = None
@@ -65,7 +65,7 @@ def main(page: ft.Page):
                 ),
                 ft.NavigationRailDestination(
                     icon=Icons.NIGHTLIGHT,
-                    label="Cerrar Día"
+                    label="Cerrar Dia"
                 ),
             ]
         )

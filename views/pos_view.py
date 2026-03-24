@@ -3,7 +3,7 @@ from flet.controls.material.icons import Icons
 
 class AddProductDialog(ft.AlertDialog):
     """
-    Diálogo modal para agregar un nuevo platillo al sistema.
+    Dialogo modal para agregar un nuevo platillo al sistema.
     """
     def __init__(self, page, data_manager, on_success):
         super().__init__()
@@ -42,17 +42,17 @@ class AddProductDialog(ft.AlertDialog):
         try:
             precio = float(precio_str)
         except ValueError:
-            self._mostrar_snackbar("⚠ El precio debe ser un número valido", "#92400e")
+            self._mostrar_snackbar("⚠ El precio debe ser un numero valido", "#92400e")
             return
 
-        # Intentar agregar usando la lógica de negocio (DataManager)
+        # Intentar agregar usando la logica de negocio (DataManager)
         agregado = self.dm.agregar_producto(nombre, precio)
         if agregado:
             self.open = False
             self.txt_nombre.value = ""
             self.txt_precio.value = ""
             self._mostrar_snackbar(f"✅ Platillo '{nombre}' agregado exitosamente.", "#166534")
-            self.on_success() # Función Callback del View para refrescar la lista
+            self.on_success() # Funcion Callback del View para refrescar la lista
         else:
             self._mostrar_snackbar("⚠ El platillo ya existe, intenta con otro nombre.", "#92400e")
         
@@ -60,7 +60,7 @@ class AddProductDialog(ft.AlertDialog):
 
     def _mostrar_snackbar(self, texto, color):
         if not self.main_page.overlay:
-            pass  # En caso el overlay no esté inicializado
+            pass  # En caso el overlay no este inicializado
         snack = ft.SnackBar(ft.Text(texto), bgcolor=color)
         self.main_page.overlay.append(snack)
         snack.open = True
@@ -68,7 +68,7 @@ class AddProductDialog(ft.AlertDialog):
 
 class DeleteProductDialog(ft.AlertDialog):
     """
-    Diálogo modal para confirmar la eliminación permanente de un platillo del sistema.
+    Dialogo modal para confirmar la eliminacion permanente de un platillo del sistema.
     """
     def __init__(self, page, data_manager, on_success):
         super().__init__()
@@ -77,7 +77,7 @@ class DeleteProductDialog(ft.AlertDialog):
         self.on_success = on_success
         self.producto_a_eliminar = None
         
-        self.title = ft.Text("¿Eliminar Platillo?", weight="bold")
+        self.title = ft.Text("Eliminar Platillo?", weight="bold")
         self.txt_mensaje = ft.Text("")
         self.content = self.txt_mensaje
         
@@ -89,7 +89,7 @@ class DeleteProductDialog(ft.AlertDialog):
 
     def abrir(self, nombre_prod):
         self.producto_a_eliminar = nombre_prod
-        self.txt_mensaje.value = f"Estás a punto de eliminar '{nombre_prod}' permanentemente de tu catálogo.\n¿Estás seguro?"
+        self.txt_mensaje.value = f"Estas a punto de eliminar '{nombre_prod}' permanentemente de tu catalogo.\nEstas seguro?"
         self.open = True
         if self not in self.main_page.overlay:
             self.main_page.overlay.append(self)
@@ -108,17 +108,17 @@ class DeleteProductDialog(ft.AlertDialog):
 
 class CartItemRow(ft.Row):
     """
-    Componente visual interactivo que representa un renglón del carrito de compras.
-    Encapsula toda la lógica de presentación individual por elemento (Aumentar, Reducir, Borrar).
+    Componente visual interactivo que representa un renglon del carrito de compras.
+    Encapsula toda la logica de presentacion individual por elemento (Aumentar, Reducir, Borrar).
     """
     def __init__(self, nombre_prod: str, precio: float, cantidad: int, on_change):
         super().__init__(alignment="spaceBetween")
         self.nombre_prod = nombre_prod
         self.precio = precio
         self.cantidad = cantidad
-        self.on_change = on_change # Callback Event para notificar si sumó/restó al componente Padre
+        self.on_change = on_change # Callback Event para notificar si sumo/resto al componente Padre
 
-        # Información
+        # Informacion
         self.info_text = ft.Text(f"{self.nombre_prod} (${self.precio:.2f})", expand=True)
         
         # Botones (+, -, Basurero) y cantidad Text
@@ -152,7 +152,7 @@ class CartItemRow(ft.Row):
         ]
 
     def _decrementar(self, e):
-        # Si tiene más de uno, restamos y notificamos
+        # Si tiene mas de uno, restamos y notificamos
         if self.cantidad > 1:
             self.cantidad -= 1
             self._actualizar_ui()
@@ -180,7 +180,7 @@ class CartItemRow(ft.Row):
 class POSView(ft.Container):
     """
     Vista principal del Punto de Venta.
-    Controla el catálogo de platillos y el flujo de caja (carrito de compras).
+    Controla el catalogo de platillos y el flujo de caja (carrito de compras).
     Implementa POO delegando responsabilidades de UI en AddProductDialog y CartItemRow.
     """
     def __init__(self, page, data_manager):
@@ -234,7 +234,7 @@ class POSView(ft.Container):
             )
         )
 
-        # 2. Tarjetas Dinámicas de los platillos del JSON
+        # 2. Tarjetas Dinamicas de los platillos del JSON
         for prod, data in self.inventario.items():
             self.productos_grid.controls.append(
                 ft.Card(
@@ -247,7 +247,7 @@ class POSView(ft.Container):
                                     icon=Icons.DELETE,
                                     icon_color="#ef4444",
                                     icon_size=18,
-                                    tooltip="Eliminar menú",
+                                    tooltip="Eliminar menu",
                                     # Propaga al delete dialog. Al usar un IconButton anidado, el container click no se lanza
                                     on_click=lambda e, p=prod: self.delete_product_dialog.abrir(p)
                                 )
@@ -274,7 +274,7 @@ class POSView(ft.Container):
         self.main_page.update()
 
     def _on_product_added(self):
-        """Se activa desde AddProductDialog al haber éxito, para pintar la nueva tarjeta."""
+        """Se activa desde AddProductDialog al haber exito, para pintar la nueva tarjeta."""
         self.inventario = self.dm.get_inventario()
         self._renderizar_catalogo()
 
@@ -287,14 +287,14 @@ class POSView(ft.Container):
         self._renderizar_catalogo()
 
     def _add_to_cart(self, prod: str, e):
-        """Sube en +1 el producto al carrito. Método llamado al clickear card."""
+        """Sube en +1 el producto al carrito. Metodo llamado al clickear card."""
         self.carrito[prod] = self.carrito.get(prod, 0) + 1
         self._update_ticket()
 
     def _on_cart_item_change(self, prod: str, nueva_cantidad: int):
         """
         Escucha los avisos de CartItemRow. 
-        Si el usuario da clic en '-' o 'Basurero', manejamos la resta o eliminación aquí. 
+        Si el usuario da clic en '-' o 'Basurero', manejamos la resta o eliminacion aqui. 
         """
         if nueva_cantidad <= 0:
             if prod in self.carrito:
@@ -327,7 +327,7 @@ class POSView(ft.Container):
         self.update()
 
     def _cobrar(self, e):
-        """Verifica que el layout no esté vacío y salva la venta en Archivos JSON."""
+        """Verifica que el layout no este vacio y salva la venta en Archivos JSON."""
         total = sum(self.carrito[p] * self.inventario[p]["precio"] for p in self.carrito)
         if total > 0:
             self.dm.registrar_venta({k: v for k, v in self.carrito.items() if v > 0}, total)
@@ -335,19 +335,19 @@ class POSView(ft.Container):
             self.inventario = self.dm.get_inventario() # Posibles cambios en JSON
             self._update_ticket()
             
-            # Popup de confirmación
+            # Popup de confirmacion
             snack = ft.SnackBar(ft.Text("✅ Cobro exitoso"), bgcolor="#166534")
             self.main_page.overlay.append(snack)
             snack.open = True
             self.main_page.update()
 
     def _deshacer(self, e):
-        """Aplica Deshacer usando DataManager, útil por si se cobra algo no deseado."""
+        """Aplica Deshacer usando DataManager, util por si se cobra algo no deseado."""
         resultado = self.dm.deshacer_ultima_venta()
         if resultado:
             self.inventario = self.dm.get_inventario()
             snack = ft.SnackBar(
-                ft.Text(f"↩ Última venta (${resultado['total']:.2f}) deshecha correctamente"),
+                ft.Text(f"↩ Ultima venta (${resultado['total']:.2f}) deshecha correctamente"),
                 bgcolor="#92400e"
             )
             self.main_page.overlay.append(snack)
@@ -389,7 +389,7 @@ class POSView(ft.Container):
                 ),
                 ft.Container(height=6),
                 ft.OutlinedButton(
-                    "↩ Deshacer última venta",
+                    "↩ Deshacer ultima venta",
                     on_click=self._deshacer,
                     width=float('inf'),
                     height=44,

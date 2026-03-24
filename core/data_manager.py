@@ -58,7 +58,7 @@ class DataManager:
     def agregar_producto(self, nombre: str, precio: float, stock: int = 100) -> bool:
         """
         Agrega un nuevo producto al inventario.
-        Retorna True si la operación fue exitosa, o False si el producto ya existía.
+        Retorna True si la operacion fue exitosa, o False si el producto ya existia.
         """
         inv = self.get_inventario()
         # Verificamos si ya existe para no sobreescribirlo accidentalmente
@@ -102,7 +102,7 @@ class DataManager:
         self._guardar(self.f_inventario, inv)
 
     def deshacer_ultima_venta(self):
-        """Elimina la última venta y restaura el stock correspondiente."""
+        """Elimina la ultima venta y restaura el stock correspondiente."""
         ventas = self._cargar(self.f_ventas)
         if not ventas:
             return False
@@ -118,13 +118,13 @@ class DataManager:
         return ultima
 
     def get_historial_hoy(self):
-        """Retorna lista de ventas del día actual con hora y total."""
+        """Retorna lista de ventas del dia actual con hora y total."""
         fecha_hoy = datetime.now().strftime("%Y-%m-%d")
         ventas = self._cargar(self.f_ventas)
         return [v for v in ventas if v.get("fecha") == fecha_hoy]
 
     def cerrar_dia(self):
-        """Calcula el resumen del día y lo guarda en data/cierres/YYYY-MM-DD.json."""
+        """Calcula el resumen del dia y lo guarda en data/cierres/YYYY-MM-DD.json."""
         fecha_hoy = datetime.now().strftime("%Y-%m-%d")
         ventas = self._cargar(self.f_ventas)
         gastos = self._cargar(self.f_gastos)
@@ -174,7 +174,7 @@ class DataManager:
         total_v = sum(v["total"] for v in ventas_hoy)
         total_g = sum(g["monto"] for g in gastos if g.get("fecha") == fecha_hoy)
         
-        # Productos más vendidos hoy
+        # Productos mas vendidos hoy
         conteo = {}
         for v in ventas_hoy:
             for p, c in v["productos"].items():
