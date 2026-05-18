@@ -287,11 +287,11 @@ class DataManager:
         return resumen, ruta
 
     # ─────────────────────────────────────────────
-    # CONSULTAS PARA DASHBOARD
+    # CONSULTAS PARA DASHBOARD Y HISTÓRICOS
     # ─────────────────────────────────────────────
 
     def get_historico_7_dias(self) -> list:
-        """Retorna totales de ventas de los últimos 7 días."""
+        """Retorna totales de ventas de los últimos 7 días (Usado en Dashboard)."""
         hoy = datetime.now().date()
         resultado = []
 
@@ -309,6 +309,31 @@ class DataManager:
                 })
 
         return resultado
+
+    def get_todo_el_historico(self) -> list:
+        """
+        NUEVO MÉTODO: Extrae la lista completa de cierres oficiales de la base de datos.
+        Permite a CierreDiaView acumular semanas, meses, años y filtrar búsquedas.
+        """
+        try:
+            with self._get_conn() as conn:
+                rows = conn.execute(
+                    "SELECT fecha, ventas, gastos, ganancia FROM cierres ORDER BY fecha DESC"
+                ).fetchall()
+                
+                # Transformamos los objetos row a diccionarios puros
+                return [
+                    {
+                        "fecha": r["fecha"], 
+                        "ventas": r["ventas"], 
+                        "gastos": r["gastos"], 
+                        "ganancia": r["ganancia"]
+                    } 
+                    for r in rows
+                ]
+        except Exception as e:
+            print(f"Error en get_todo_el_historico: {e}")
+            return []
 
     def get_kpis_y_graficos(self) -> dict:
         """Retorna ventas, gastos, ganancia del día y top productos vendidos hoy."""
