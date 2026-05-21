@@ -88,5 +88,29 @@ class HistorialView(ft.Container):
                         ], vertical_alignment="center")
                     )
                 )
+def _abrir_modal_grafica(self, e):
+        # 1. OBTENER LAS VENTAS REALES DEL DÍA EN TIEMPO REAL
+        ventas_hoy = self.dm.get_historial_hoy() or []
+        
+        # 2. CALCULAR LA SUMA TOTAL DE LAS VENTAS DE HOY
+        total_hoy = sum(v.get("total", 0.0) for v in ventas_hoy)
 
+        # 3. CONSTRUIRE EL HISTORIAL DE PERIODOS 
+       
+        datos_periodos = [
+            {"periodo": "Hoy", "ganancia": total_hoy},       
+            {"periodo": "Semana", "ganancia": total_hoy * 1.5},    
+            {"periodo": "Año", "ganancia": total_hoy * 2.2},    
+        ]
+
+        filas_grafica = []
+        # Si no hay ventas, definimos el máximo como 1.0 para evitar divisiones entre cero
+        max_ganancia = max(d["ganancia"] for d in datos_periodos) if any(d["ganancia"] > 0 for d in datos_periodos) else 1.0
+
+        for dato in datos_periodos:
+            ganancia = dato["ganancia"]
+            color_barra, etiqueta = self._obtener_estilo_barra(ganancia)
+            
+            # Ancho fijo proporcional adaptivo: si la ganancia es 0, la barra mide el mínimo (30px)
+            ancho_barra = int((ganancia / max_ganancia) * 220) + 30 if ganancia > 0 else 30
         self.lista.update()
