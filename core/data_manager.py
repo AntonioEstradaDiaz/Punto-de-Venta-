@@ -344,3 +344,51 @@ class DataManager:
             "ganancia":      total_v - total_g,
             "top_productos": top_productos,
         }
+    
+    def get_reporte_general(self) -> dict:
+        """
+        Retorna el resumen histórico de TODOS los cierres de día.
+
+        Estructura devuelta:
+        {
+            "total_ventas":  float,
+            "total_gastos":  float,
+            "ganancia_neta": float,
+            "num_dias":      int,
+            "cierres": [
+                {"fecha": str, "ventas": float, "gastos": float, "ganancia": float},
+                ...
+            ]
+        }
+        """
+        with self._get_conn() as conn:
+            totales = conn.execute(
+                """SELECT
+                       COALESCE(SUM(ventas),   0) AS tv,
+                       COALESCE(SUM(gastos),   0) AS tg,
+                       COALESCE(SUM(ganancia), 0) AS tn,
+                       COUNT(*)                   AS nd
+                   FROM cierres"""
+            ).fetchone()
+
+            filas = conn.execute(
+                "SELECT fecha, ventas, gastos, ganancia FROM cierres ORDER BY fecha"
+            ).fetchall()
+
+        cierres = [
+            {
+                "fecha":    r["fecha"],
+                "ventas":   r["ventas"],
+                "gastos":   r["gastos"],
+                "ganancia": r["ganancia"],
+            }
+            for r in filas
+        ]
+
+        return {
+            "total_ventas":  round(totales["tv"], 2),
+            "total_gastos":  round(totales["tg"], 2),
+            "ganancia_neta": round(totales["tn"], 2),
+            "num_dias":      totales["nd"],
+            "cierres":       cierres,
+        }
