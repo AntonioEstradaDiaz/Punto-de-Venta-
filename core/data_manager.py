@@ -77,7 +77,21 @@ class DataManager:
                 );
             """)
 
-
+            # Insertar catálogo base solo si la tabla está vacía
+            count = conn.execute("SELECT COUNT(*) FROM productos").fetchone()[0]
+            if count == 0:
+                catalogo_base = [
+                    ("Mole Poblano",      45.0, 100),
+                    ("Enchiladas Verdes", 35.0, 100),
+                    ("Chilaquiles Rojos", 30.0, 100),
+                    ("Pozole Rojo",       50.0, 100),
+                    ("Chiles Rellenos",   40.0, 100),
+                    ("Tlayuda Oaxaquena", 55.0, 100),
+                ]
+                conn.executemany(
+                    "INSERT OR IGNORE INTO productos (nombre, precio, stock) VALUES (?, ?, ?)",
+                    catalogo_base
+                )
 
     # ─────────────────────────────────────────────
     # INVENTARIO
@@ -263,7 +277,7 @@ class DataManager:
             "ganancia": ganancia,
         }
 
-        # Respaldo JSON (compatible con versión anterior)
+        # Respaldo JSON
         dir_cierres = os.path.join(self.dir_data, "cierres")
         os.makedirs(dir_cierres, exist_ok=True)
         ruta = os.path.join(dir_cierres, f"{fecha_hoy}.json")

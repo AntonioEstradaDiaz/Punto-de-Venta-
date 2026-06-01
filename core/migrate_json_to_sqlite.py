@@ -3,7 +3,7 @@ migrate_json_to_sqlite.py
 Script de migracion ONE-TIME: lee los archivos JSON existentes
 y los inserta en la base de datos SQLite (pos.db).
 
-Uso desde la raiz del proyecto:
+Uso desde la raiz del proyecto POS_TAP:
     py -m core.migrate_json_to_sqlite
 
 Los archivos JSON originales NO se eliminan (quedan como respaldo).
@@ -135,26 +135,76 @@ def verificar_resultado(conn: sqlite3.Connection):
         print(f"  {t:<20} -> {n} registros")
 
 
+def crear_tablas(conn: sqlite3.Connection):
+    """
+    Crea el esquema de la BD sin insertar datos semilla.
+    Se usa en lugar de DataManager() para no contaminar la migracion
+    con el catalogo por defecto antes de importar el inventario.json.
+    """
+    conn.executescript("""
+        CREATE TABLE IF NOT EXISTS productos (
+            id      INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre  TEXT    UNIQUE NOT NULL,
+            precio  REAL    NOT NULL,
+            stock   INTEGER NOT NULL DEFAULT 100
+        );
+        CREATE TABLE IF NOT EXISTS ventas (
+            id    INTEGER PRIMARY KEY AUTOINCREMENT,
+            fecha TEXT    NOT NULL,
+            hora  TEXT    NOT NULL,
+            total REAL    NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS venta_detalle (
+            id        INTEGER PRIMARY KEY AUTOINCREMENT,
+            venta_id  INTEGER NOT NULL REFERENCES ventas(id) ON DELETE CASCADE,
+            producto  TEXT    NOT NULL,
+            cantidad  INTEGER NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS gastos (
+            id       INTEGER PRIMARY KEY AUTOINCREMENT,
+            fecha    TEXT NOT NULL,
+            concepto TEXT NOT NULL,
+            monto    REAL NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS cierres (
+            id       INTEGER PRIMARY KEY AUTOINCREMENT,
+            fecha    TEXT UNIQUE NOT NULL,
+            ventas   REAL NOT NULL,
+            gastos   REAL NOT NULL,
+            ganancia REAL NOT NULL
+        );
+    """)
+    print("  [OK] Esquema SQLite listo.")
+
+
 def seed_data_si_esta_vacio(conn: sqlite3.Connection):
+    """
+    Solo inserta el catalogo base si el inventario quedo completamente vacio
+    (el alumno no tenia inventario.json con sus propios platillos).
+    """
     count = conn.execute("SELECT COUNT(*) FROM productos").fetchone()[0]
     if count == 0:
-        print("\n  [!] El inventario esta vacio despues de la migracion.")
-        print("  Insertando datos genericos de prueba...")
-        productos_base = [
-            ("Producto de Ejemplo A", 15.50, 100),
-            ("Producto de Ejemplo B", 25.00, 100),
-            ("Producto de Ejemplo C", 50.00, 100),
+        print("\n  [!] No habia inventario.json — insertando catalogo base de antojitos...")
+        catalogo_base = [
+            ("Mole Poblano",      45.0, 100),
+            ("Enchiladas Verdes", 35.0, 100),
+            ("Chilaquiles Rojos", 30.0, 100),
+            ("Pozole Rojo",       50.0, 100),
+            ("Chiles Rellenos",   40.0, 100),
+            ("Tlayuda Oaxaquena", 55.0, 100),
         ]
         conn.executemany(
             "INSERT OR IGNORE INTO productos (nombre, precio, stock) VALUES (?, ?, ?)",
-            productos_base
+            catalogo_base
         )
-        print("  [OK] Datos de prueba insertados.")
+        print("  [OK] Catalogo base insertado.")
+    else:
+        print(f"\n  [OK] Se conservaron {count} productos de tu inventario.json.")
 
 
 def main():
     print("=" * 55)
-    print("  MIGRACION JSON -> SQLite  -  Sistema POS")
+    print("  MIGRACION JSON -> SQLite  -  POS_TAP")
     print("=" * 55)
     print(f"\n  Base de datos: {DB_PATH}")
 
@@ -170,18 +220,17 @@ def main():
                     print("\n  Migracion cancelada por el usuario.")
                     return
         except sqlite3.OperationalError:
-            pass  # Las tablas aun no existen; se crearan al instanciar DataManager
+            pass  # Las tablas aun no existen; se crearan a continuacion
 
-    # Importar DataManager para que cree las tablas si no existen
-    from core.data_manager import DataManager
-    DataManager()  # Solo para _inicializar_bd()
-
+    # Crear tablas directamente (SIN semilla) para que los platillos
+    # del inventario.json sean la unica fuente de verdad.
     with get_conn() as conn:
+        crear_tablas(conn)
         migrar_inventario(conn)
         migrar_ventas(conn)
         migrar_gastos(conn)
         migrar_cierres(conn)
-        seed_data_si_esta_vacio(conn)
+        seed_data_si_esta_vacio(conn)   # solo actua si inventario.json estaba vacio
         verificar_resultado(conn)
 
     print("\n[OK] Migracion completada exitosamente!")
